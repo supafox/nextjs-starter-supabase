@@ -1,0 +1,24 @@
+{
+  "name": "SupaFox",
+  "short_name": "SupaFox",
+  "icons": [
+    {
+      "src": "/web-app/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#0D1117",
+  "background_color": "#0D1117",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "portrait"
+}
