@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import * as nosecone from "@nosecone/next";
 
@@ -28,8 +28,26 @@ function createNoseconeConfig(nonce: string): nosecone.NoseconeOptions {
 }
 
 export async function middleware(request: NextRequest) {
+  // Performance optimization: Skip middleware for static assets
+  // This prevents unnecessary session checks and header processing for static files
+  const { pathname } = request.nextUrl;
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js|woff|woff2|ttf|eot)$/)
+  ) {
+    return NextResponse.next();
+  }
+
   // Update session and handle authentication
-  const sessionResponse = await updateSession(request);
+  let sessionResponse;
+  try {
+    sessionResponse = await updateSession(request);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Session update failed:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 
   // Return early if session update requires special handling
   if (sessionResponse.status !== 200) {
@@ -37,6 +55,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Preserve cookies from session response
+  // Note: Headers.getSetCookie() requires Node.js >=19.7.0 (specified in package.json engines)
   const upstreamCookies = sessionResponse.headers.getSetCookie?.() ?? [];
 
   // Generate a fresh nonce for this request
@@ -53,27 +72,21 @@ export async function middleware(request: NextRequest) {
   // Create request-specific nosecone config with the generated nonce
   const noseconeConfig = createNoseconeConfig(requestNonce);
 
-  // Create middleware with request-specific config
-  // Add Vercel toolbar in preview environments
-  const noseconeMiddleware = nosecone.createMiddleware(
-    process.env.VERCEL_ENV === "preview"
-      ? nosecone.withVercelToolbar(noseconeConfig)
-      : noseconeConfig
-  ) as (req: NextRequest) => Promise<Response>;
+  // Apply nosecone security headers to the response
+  const noseconeHeaders = nosecone.default(noseconeConfig);
 
-  // Add nonce to request headers for downstream use
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", requestNonce);
-
-  // Create a new request with the updated headers
-  const clonedRequest = new NextRequest(request.url, {
-    headers: requestHeaders,
-    method: request.method,
-    body: request.clone().body,
+  // Create a response that will be modified with security headers
+  // but still allow the request to continue to the next middleware
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   });
 
-  // Process the request through nosecone middleware
-  const response = await noseconeMiddleware(clonedRequest);
+  // Apply nosecone security headers to the response
+  noseconeHeaders.forEach((value: string, key: string) => {
+    response.headers.set(key, value);
+  });
 
   // Add nonce to response headers for client-side access
   response.headers.set("x-nonce", requestNonce);
