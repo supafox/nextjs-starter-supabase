@@ -115,56 +115,6 @@ export default function Home() {
           ))}
         </Grid>
       </Section>
-      <Separator />
-      <Section id="grid-test" gap={8}>
-        <Stack gap={2}>
-          <Header as="h2" size="48" className="max-w-[900px]">
-            Grid Component Test
-          </Header>
-          <Copy className="max-w-[700px]">
-            Testing the Grid component with various gap values to ensure dynamic
-            class generation is prevented.
-          </Copy>
-        </Stack>
-        <Stack gap={4}>
-          <div>
-            <Header as="h3" size="24">
-              Valid gap values (should work):
-            </Header>
-            <Grid columns={3} gap={4} className="mt-4">
-              <GridCell className="bg-blue-100 p-4">Valid gap: 4</GridCell>
-              <GridCell className="bg-blue-100 p-4">Valid gap: 4</GridCell>
-              <GridCell className="bg-blue-100 p-4">Valid gap: 4</GridCell>
-            </Grid>
-          </div>
-          <div>
-            <Header as="h3" size="24">
-              Invalid gap values (should be ignored):
-            </Header>
-            <Grid columns={3} gap={99} className="mt-4">
-              <GridCell className="bg-red-100 p-4">
-                Invalid gap: 99 (ignored)
-              </GridCell>
-              <GridCell className="bg-red-100 p-4">
-                Invalid gap: 99 (ignored)
-              </GridCell>
-              <GridCell className="bg-red-100 p-4">
-                Invalid gap: 99 (ignored)
-              </GridCell>
-            </Grid>
-          </div>
-          <div>
-            <Header as="h3" size="24">
-              Mixed valid/invalid responsive gaps:
-            </Header>
-            <Grid columns={3} gap={{ sm: 2, md: 99, lg: 8 }} className="mt-4">
-              <GridCell className="bg-green-100 p-4">Mixed gaps</GridCell>
-              <GridCell className="bg-green-100 p-4">Mixed gaps</GridCell>
-              <GridCell className="bg-green-100 p-4">Mixed gaps</GridCell>
-            </Grid>
-          </div>
-        </Stack>
-      </Section>
     </>
   );
 }
