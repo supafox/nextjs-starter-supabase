@@ -43,3 +43,4 @@ tsconfig.tsbuildinfo
 
 # contentlayer2
 .contentlayer
+.env*.local
